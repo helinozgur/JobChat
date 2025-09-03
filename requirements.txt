@@ -1,0 +1,9 @@
+flask
+flask-cors
+requests
+beautifulsoup4
+PyMuPDF
+scikit-learn
+python-dotenv
+Flask-Session>=0.5.0
+python-dotenv

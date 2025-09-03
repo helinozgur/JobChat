@@ -466,18 +466,10 @@ let analysisData = null;
 let eventSource = null;
 let chatStartTime = null;
 
-// Form submission with enhanced validation
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.createElement('form');
-  form.id = 'analyzeForm';
-  form.addEventListener('submit', handleAnalysis);
-  
-  // Wrap existing analyze section in form
-  const analyzeSection = document.querySelector('.card');
-  const formContent = analyzeSection.innerHTML;
-  analyzeSection.innerHTML = '';
-  analyzeSection.appendChild(form);
-  form.innerHTML = formContent;
+// ✅ DOĞRUSU
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('analyzeForm');
+  if (form) form.addEventListener('submit', handleAnalysis);
 });
 
 async function handleAnalysis(e) {
