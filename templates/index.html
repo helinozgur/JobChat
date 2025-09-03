@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <title>ATS Check + AI Kariyer Koçu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root { 
+      --bg: #0b1020; 
+      --card: #12192d; 
+      --muted: #9fb0d3; 
+      --acc: #3ea6ff; 
+      --ok: #41d38a; 
+      --warn: #ffb84d; 
+      --err: #ff6b6b; 
+      --border: #23325a;
+      --input-bg: #0e1630;
+      --text: #e6edff;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      margin: 0; 
+      font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; 
+      background: var(--bg); 
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    .wrap { 
+      max-width: 1200px; 
+      margin: 32px auto; 
+      padding: 0 16px; 
+    }
+    
+    .card { 
+      background: var(--card); 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 24px;
+    }
+    
+    h1 { 
+      font-size: 1.4rem; 
+      margin: 0 0 16px; 
+      color: var(--text);
+      font-weight: 600;
+    }
+    
+    h2 {
+      font-size: 1.1rem;
+      margin: 0 0 12px;
+      color: var(--acc);
+    }
+    
+    label { 
+      display: block; 
+      color: var(--muted); 
+      margin-bottom: 8px; 
+      font-weight: 500;
+    }
+    
+    input[type=text], input[type=url] { 
+      width: 100%; 
+      padding: 12px 16px; 
+      border-radius: 12px; 
+      border: 1px solid var(--border); 
+      background: var(--input-bg); 
+      color: var(--text);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    input[type=text]:focus, input[type=url]:focus {
+      outline: none;
+      border-color: var(--acc);
+    }
+    
+    input[type=file] { 
+      color: var(--muted);
+      background: var(--input-bg);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+    
+    .row { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 24px; 
+    }
+    
+    @media(min-width: 900px) { 
+      .row { 
+        grid-template-columns: 1.2fr 0.8fr; 
+      } 
+    }
+    
+    .btn { 
+      background: var(--acc); 
+      color: #041326; 
+      padding: 12px 20px; 
+      border: none; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      background: #2d9cff;
+      transform: translateY(-1px);
+    }
+    
+    .btn[disabled] { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+    
+    .muted { 
+      color: var(--muted); 
+      font-size: 13px;
+    }
+    
+    .chips { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 8px; 
+    }
+    
+    .chip { 
+      background: var(--input-bg); 
+      border: 1px solid var(--border); 
+      padding: 6px 12px; 
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    
+    .prog { 
+      background: var(--input-bg); 
+      border-radius: 8px; 
+      height: 12px; 
+      border: 1px solid var(--border); 
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .prog > b { 
+      display: block; 
+      height: 100%; 
+      background: linear-gradient(90deg, #2fe6a3, #3ea6ff); 
+      width: 0%; 
+      transition: width 0.3s ease;
+    }
+    
+    .ok { color: var(--ok); } 
+    .warn { color: var(--warn); } 
+    .err { color: var(--err); }
+    
+    textarea { 
+      width: 100%; 
+      min-height: 120px; 
+      resize: vertical; 
+      background: var(--input-bg); 
+      color: var(--text); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--acc);
+    }
+    
+    .mono { 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; 
+    }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .status-item {
+      background: var(--input-bg);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .status-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    
+    .status-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      border-top-color: var(--acc);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid;
+    }
+    
+    .alert-error {
+      background: rgba(255, 107, 107, 0.1);
+      border-color: var(--err);
+      color: var(--err);
+    }
+    
+    .alert-success {
+      background: rgba(65, 211, 138, 0.1);
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+    
+    .profession-badge {
+      display: inline-block;
+      background: var(--acc);
+      color: #041326;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    
+    #chatOutput {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 200px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 500px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .example-questions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .example-btn {
+      background: var(--input-bg);
+      color: var(--muted);
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .example-btn:hover {
+      color: var(--text);
+      border-color: var(--acc);
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>🚀 ATS Kontrol + AI Kariyer Koçu</h1>
+    <p class="muted">CV'nizi iş ilanlarına göre optimize edin ve AI koçunuzdan kişiselleştirilmiş kariyer tavsiyeleri alın.</p>
+    
+    <form id="analyzeForm">
+      <div class="row">
+        <div>
+          <label for="jobUrl">İş İlanı URL'si</label>
+          <input id="jobUrl" name="job_url" type="url" placeholder="https://..." required>
+          <p class="muted" style="margin-top: 8px;">LinkedIn, Kariyer.net, Indeed gibi platformlardaki ilan linkini yapıştırın</p>
+          
+          <div style="margin-top: 20px">
+            <label for="cvFile">CV Dosyası (PDF)</label>
+            <input id="cvFile" name="cv" type="file" accept="application/pdf" required>
+          </div>
+          
+          <div style="margin-top: 20px">
+            <button type="submit" class="btn" id="analyzeBtn">
+              <span id="analyzeBtnText">📊 Analiz Et</span>
+              <div id="analyzeLoading" class="loading" style="display: none;"></div>
+            </button>
+          </div>
+        </div>
+        
+        <div>
+          <h2>📈 ATS Skoru</h2>
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="status-label">Genel Skor</div>
+              <div class="status-value" id="scoreValue">-</div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Tespit Edilen Meslek</div>
+              <div class="status-value" id="professionValue">-</div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px">
+            <div class="status-label">Benzerlik</div>
+            <div class="prog"><b id="similarityBar" style="width: 0%"></b></div>
+          </div>
+          
+          <div style="margin-top: 12px">
+            <div class="status-label">Kapsama</div>
+            <div class="prog"><b id="coverageBar" style="width: 0%"></b></div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="errorAlert" class="alert alert-error" style="display: none;"></div>
+  <div id="successAlert" class="alert alert-success" style="display: none;"></div>
+
+  <div id="resultsSection" style="display: none;">
+    <div class="card">
+      <h2>🎯 Skills Gap Analysis</h2>
+      <div id="skillsAnalysis">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 14px; color: var(--acc); margin-bottom: 8px;">✅ Your Skills</h3>
+            <div id="cvSkills" class="chips"></div>
+          </div>
+          <div>
+            <h3 style="font-size: 14px; color: var(--ok); margin-bottom: 8px;">🎯 Matched Skills</h3>
+            <div id="matchedSkills" class="chips"></div>
+          </div>
+        </div>
+        
+        <h3 style="font-size: 14px; color: var(--warn); margin-bottom: 8px;">❌ Missing Skills (High Priority)</h3>
+        <div id="missingKeywords" class="chips"></div>
+        
+        <div style="margin-top: 16px; padding: 12px; background: var(--input-bg); border-radius: 8px; border-left: 4px solid var(--acc);">
+          <div class="muted" style="font-size: 13px;">
+            <strong>Job Requirements:</strong> <span id="jobSkills">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚡ Professional Optimization Report</h2>
+      <div id="optimizationReport">
+        <!-- Dinamik olarak doldurulacak -->
+      </div>
+      
+      <details style="margin-top: 20px;">
+        <summary class="muted" style="cursor: pointer; font-weight: 600;">📋 Resume Preview (First 800 characters)</summary>
+        <div class="mono muted" id="cvPreview" style="margin-top: 12px; padding: 16px; background: var(--input-bg); border-radius: 8px; font-size: 12px; line-height: 1.4;"></div>
+      </details>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🤖 AI Career Coach</h2>
+    
+    <div id="professionBadge" style="display: none; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+        <div style="font-size: 24px;">👨‍💼</div>
+        <div>
+          <div style="font-weight: 600; font-size: 16px;" id="detectedProfession">Profession</div>
+          <div style="font-size: 13px; opacity: 0.9;" id="professionDescription">AI-powered career coaching</div>
+        </div>
+      </div>
+    </div>
+    
+    <p class="muted" style="margin-bottom: 16px;">
+      <strong>Get personalized, career advice.</strong><br>
+      Your profession is auto-detected from your resume for tailored recommendations.
+    </p>
+    
+    <div class="example-questions">
+      <button type="button" class="example-btn" onclick="setQuestion('What projects should I add to my resume for this role?')">Project Ideas</button>
+      <button type="button" class="example-btn" onclick="setQuestion('How can I optimize my resume for this specific job?')">Resume Optimization</button>
+      <button type="button" class="example-btn" onclick="setQuestion('What skills should I develop to advance my career?')">Skill Development</button>
+      <button type="button" class="example-btn" onclick="setQuestion('How should I prepare for interviews for this position?')">Interview Prep</button>
+      <button type="button" class="example-btn" onclick="setQuestion('What are the career progression paths in my field?')">Career Path</button>
+    </div>
+    
+    <textarea id="chatQuestion" placeholder="Ask your AI career coach anything... For example: 'What specific projects should I highlight for this software engineering role? Include ATS-friendly descriptions with metrics.'"></textarea>
+    
+    <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+      <button type="button" class="btn" id="chatBtn">
+        <span id="chatBtnText">💬 Ask Coach</span>
+        <div id="chatLoading" class="loading" style="display: none;"></div>
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="clearChat()">🗑️ Clear</button>
+      
+      <!-- Typing indicator -->
+      <div id="typingIndicator" style="display: none; color: var(--muted); font-size: 13px; margin-left: 8px;">
+        <div class="loading" style="width: 12px; height: 12px; margin-right: 6px; display: inline-block; vertical-align: middle;"></div>
+        AI is thinking...
+      </div>
+    </div>
+    
+    <div id="chatOutput" style="margin-top: 16px;">
+      <div style="text-align: center; color: var(--muted); padding: 40px 20px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+        <div style="font-weight: 600; margin-bottom: 8px;">AI Career Coach Ready</div>
+        <div style="font-size: 13px;">Upload your resume first, then get personalized career advice for your profession!</div>
+      </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div id="chatStats" style="display: none; margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center;">
+      Powered by <strong>Qwen2.5 7B</strong> • <span id="responseTime">-</span>ms response • <span id="tokenCount">-</span> tokens
+    </div>
+  </div>
+</div>
+
+<script>
+let analysisData = null;
+let eventSource = null;
+let chatStartTime = null;
+
+// Form submission with enhanced validation
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.createElement('form');
+  form.id = 'analyzeForm';
+  form.addEventListener('submit', handleAnalysis);
+  
+  // Wrap existing analyze section in form
+  const analyzeSection = document.querySelector('.card');
+  const formContent = analyzeSection.innerHTML;
+  analyzeSection.innerHTML = '';
+  analyzeSection.appendChild(form);
+  form.innerHTML = formContent;
+});
+
+async function handleAnalysis(e) {
+  e.preventDefault();
+  
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const analyzeBtnText = document.getElementById('analyzeBtnText');
+  const analyzeLoading = document.getElementById('analyzeLoading');
+  const jobUrl = document.getElementById('jobUrl').value.trim();
+  const fileInput = document.getElementById('cvFile');
+  
+  // Enhanced validation
+  if (!jobUrl) {
+    showAlert('error', '🔗 Please enter a job posting URL');
+    return;
+  }
+  
+  if (!isValidUrl(jobUrl)) {
+    showAlert('error', '🔗 Please enter a valid URL (must start with http:// or https://)');
+    return;
+  }
+  
+  if (!fileInput.files[0]) {
+    showAlert('error', '📄 Please select a PDF resume file');
+    return;
+  }
+  
+  const file = fileInput.files[0];
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
+    showAlert('error', '📄 Only PDF files are supported');
+    return;
+  }
+  
+  if (file.size > 10 * 1024 * 1024) {
+    showAlert('error', '📄 File size must be less than 10MB');
+    return;
+  }
+  
+  // UI State
+  setAnalyzeButtonState(true, 'Analyzing resume...', true);
+  hideAlerts();
+  
+  const formData = new FormData();
+  formData.append('job_url', jobUrl);
+  formData.append('cv', file);
+  
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      analysisData = data;
+      displayAnalysisResults(data);
+      showAlert('success', `✅ Analysis complete! Profession detected: ${data.profession.display_name}`);
+      
+      // Enable chat
+      updateChatInterface(data);
+      
+    } else {
+      showAlert('error', data.error || 'Analysis failed');
+    }
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    showAlert('error', `❌ Connection error: ${error.message}`);
+    
+  } finally {
+    setAnalyzeButtonState(false, '🔍 Analyze Resume', false);
+  }
+}
+
+function displayAnalysisResults(data) {
+  const { analysis, profession, skills, cv_preview } = data;
+  
+  // Update scores
+  updateScoreDisplay(analysis.score);
+  document.getElementById('professionValue').textContent = profession.display_name;
+  updateProgressBars(analysis.similarity, analysis.coverage);
+  
+  // Skills analysis
+  displaySkillsAnalysis(skills, analysis.missing);
+  
+  // Professional report
+  displayOptimizationReport(analysis, profession);
+  
+  // CV preview
+  document.getElementById('cvPreview').textContent = cv_preview;
+  
+  // Show results
+  document.getElementById('resultsSection').style.display = 'block';
+  
+  // Smooth scroll to results
+  setTimeout(() => {
+    document.getElementById('resultsSection').scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  }, 300);
+}
+
+function updateScoreDisplay(score) {
+  const scoreElement = document.getElementById('scoreValue');
+  scoreElement.textContent = Math.round(score);
+  
+  // Dynamic color based on score
+  scoreElement.className = 'status-value ';
+  if (score >= 80) scoreElement.className += 'ok';
+  else if (score >= 60) scoreElement.className += 'warn'; 
+  else scoreElement.className += 'err';
+}
+
+function updateProgressBars(similarity, coverage) {
+  document.getElementById('similarityBar').style.width = Math.round(similarity * 100) + '%';
+  document.getElementById('coverageBar').style.width = Math.round(coverage * 100) + '%';
+}
+
+function displaySkillsAnalysis(skills, missing) {
+  // CV Skills
+  const cvSkillsContainer = document.getElementById('cvSkills');
+  if (skills.cv_skills.length > 0) {
+    cvSkillsContainer.innerHTML = skills.cv_skills.slice(0, 8).map(skill => 
+      `<span class="chip" style="background: var(--acc); color: white;">${skill}</span>`
+    ).join('');
+  } else {
+    cvSkillsContainer.innerHTML = '<span class="muted">No technical skills detected</span>';
+  }
+  
+  // Matched Skills
+  const matchedContainer = document.getElementById('matchedSkills');
+  if (skills.matched_skills.length > 0) {
+    matchedContainer.innerHTML = skills.matched_skills.slice(0, 6).map(skill => 
+      `<span class="chip" style="background: var(--ok); color: white;">${skill}</span>`
+    ).join('');
+  } else {
+    matchedContainer.innerHTML = '<span class="muted">No direct skill matches</span>';
+  }
+  
+  // Missing Skills
+  const missingContainer = document.getElementById('missingKeywords');
+  if (missing.length > 0) {
+    missingContainer.innerHTML = missing.slice(0, 8).map(skill => 
+      `<span class="chip" style="background: var(--warn); color: white;">${skill}</span>`
+    ).join('');
+  } else {
+    missingContainer.innerHTML = '<span class="chip" style="background: var(--ok); color: white;">✅ No critical gaps found!</span>';
+  }
+  
+  // Job Skills
+  document.getElementById('jobSkills').textContent = 
+    skills.job_skills.length > 0 ? skills.job_skills.join(', ') : 'No specific skills detected';
+}
+function displayOptimizationReport(analysis, profession) {
+  const container = document.getElementById('optimizationReport');
+  let content = '';
+  
+  // Issues Section
+  if (analysis.issues && analysis.issues.length > 0) {
+    content += `
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--warn); font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          ⚠️ Critical Issues to Address
+        </h3>
+        <ul style="margin: 0 0 0 20px; line-height: 1.6;">
+          ${analysis.issues.map(issue => `<li>${issue}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  
+  // Suggestions Section
+  if (analysis.suggestions && analysis.suggestions.length > 0) {
+    content += `
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--acc); font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          💡 Professional Recommendations
+        </h3>
+        <ul style="margin: 0 0 0 20px; line-height: 1.6;">
+          ${analysis.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  
+  // Resume Structure Analysis
+  const sections = analysis.sections;
+  const completedSections = Object.values(sections).filter(Boolean).length;
+  const totalSections = Object.keys(sections).length;
+  
+  content += `
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: var(--acc); font-size: 14px; margin-bottom: 12px;">
+        📋 Resume Structure Analysis (${completedSections}/${totalSections} sections detected)
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+        ${Object.entries(sections).map(([section, exists]) => `
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--input-bg); border-radius: 6px; font-size: 13px;">
+            <span style="color: ${exists ? 'var(--ok)' : 'var(--err)'};">
+              ${exists ? '✅' : '❌'}
+            </span>
+            <span>${section}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  // Profession-specific tips
+  content += `
+    <div style="padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+      <h3 style="margin: 0 0 8px; font-size: 14px;">
+        🎯 ${profession.display_name} Specific Tips
+      </h3>
+      <p style="margin: 0; font-size: 13px; line-height: 1.5; opacity: 0.95;">
+        ${profession.description} - Focus on quantifiable achievements and industry-relevant keywords.
+        Your AI coach will provide detailed, role-specific guidance below.
+      </p>
+    </div>
+  `;
+  
+  container.innerHTML = content;
+}
+
+function updateChatInterface(data) {
+  const { profession } = data;
+  
+  // Update profession badge
+  document.getElementById('detectedProfession').textContent = profession.display_name;
+  document.getElementById('professionDescription').textContent = profession.description;
+  document.getElementById('professionBadge').style.display = 'block';
+  
+  // Update chat output
+  const chatOutput = document.getElementById('chatOutput');
+  chatOutput.innerHTML = `
+    <div style="text-align: center; color: var(--muted); padding: 30px 20px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">👨‍💼</div>
+      <div style="font-weight: 600; margin-bottom: 8px; color: var(--text);">
+        AI Coach Ready for ${profession.display_name}
+      </div>
+      <div style="font-size: 13px; line-height: 1.5;">
+        I've analyzed your background in <strong>${profession.display_name}</strong>.<br>
+        Ask me anything about career advancement, project ideas, or interview preparation!
+      </div>
+    </div>
+  `;
+}
+
+// Chat functionality
+document.getElementById('chatBtn').addEventListener('click', function() {
+  const question = document.getElementById('chatQuestion').value.trim();
+  
+  if (!question) {
+    showAlert('error', '❓ Please enter your question');
+    return;
+  }
+  
+  if (!analysisData) {
+    showAlert('error', '📊 Please complete resume analysis first');
+    return;
+  }
+  
+  startChat(question);
+});
+
+// Enhanced chat input handling
+document.getElementById('chatQuestion').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      document.getElementById('chatBtn').click();
+    }
+  }
+});
+
+function startChat(question) {
+  const chatBtn = document.getElementById('chatBtn');
+  const chatBtnText = document.getElementById('chatBtnText');
+  const chatLoading = document.getElementById('chatLoading');
+  const typingIndicator = document.getElementById('typingIndicator');
+  const output = document.getElementById('chatOutput');
+  
+  // UI State
+  setChatButtonState(true, 'Asking coach...', true);
+  typingIndicator.style.display = 'flex';
+  
+  // Chat output setup
+  output.innerHTML = `
+    <div style="margin-bottom: 20px; padding: 12px; background: var(--input-bg); border-radius: 8px; border-left: 4px solid var(--acc);">
+      <strong>🙋 Your Question:</strong><br>
+      <span style="font-style: italic;">"${question}"</span>
+    </div>
+    <div style="margin-bottom: 16px;">
+      <strong>🤖 AI Coach:</strong>
+    </div>
+    <div id="chatResponse" style="line-height: 1.6;"></div>
+  `;
+  
+  chatStartTime = Date.now();
+  
+  // Close existing connection
+  if (eventSource) {
+    eventSource.close();
+  }
+  
+  // Start new chat stream
+  eventSource = new EventSource(`/api/chat?question=${encodeURIComponent(question)}`);
+  
+  eventSource.onmessage = function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      
+      if (data.error) {
+        handleChatError(data.error);
+        return;
+      }
+      
+      if (data.done) {
+        handleChatComplete();
+        return;
+      }
+      
+      // Append message content
+      const chunk = (data.message && data.message.content) ? data.message.content : '';
+      if (chunk) {
+        const responseDiv = document.getElementById('chatResponse');
+        responseDiv.textContent += chunk;
+        
+        // Auto-scroll
+        output.scrollTop = output.scrollHeight;
+      }
+      
+    } catch (e) {
+      console.error('JSON parse error:', e);
+    }
+  };
+  
+  eventSource.onerror = function(event) {
+    console.error('EventSource error:', event);
+    handleChatError('Connection lost. Please try again.');
+  };
+}
+
+function handleChatError(errorMessage) {
+  const output = document.getElementById('chatOutput');
+  output.innerHTML += `
+    <div style="color: var(--err); padding: 12px; background: rgba(255, 107, 107, 0.1); border-radius: 8px; margin-top: 12px;">
+      ❌ <strong>Error:</strong> ${errorMessage}
+    </div>
+  `;
+  
+  setChatButtonState(false, '💬 Ask Coach', false);
+  document.getElementById('typingIndicator').style.display = 'none';
+  
+  if (eventSource) {
+    eventSource.close();
+  }
+}
+
+function handleChatComplete() {
+  const responseTime = Date.now() - chatStartTime;
+  const output = document.getElementById('chatOutput');
+  
+  // Add completion message
+  output.innerHTML += `
+    <div style="margin-top: 20px; padding: 12px; background: var(--input-bg); border-radius: 8px; font-size: 13px; color: var(--muted);">
+      💡 <strong>Need more advice?</strong> Try the example questions above or ask about specific aspects of your career development.
+    </div>
+  `;
+  
+  // Update stats
+  document.getElementById('responseTime').textContent = responseTime;
+  document.getElementById('chatStats').style.display = 'block';
+  
+  // Reset UI
+  setChatButtonState(false, '💬 Ask Coach', false);
+  document.getElementById('typingIndicator').style.display = 'none';
+  
+  if (eventSource) {
+    eventSource.close();
+  }
+}
+
+// Utility functions
+function setAnalyzeButtonState(disabled, text, showLoading) {
+  const btn = document.getElementById('analyzeBtn');
+  const btnText = document.getElementById('analyzeBtnText');
+  const loading = document.getElementById('analyzeLoading');
+  
+  btn.disabled = disabled;
+  btnText.textContent = text;
+  loading.style.display = showLoading ? 'inline-block' : 'none';
+}
+
+function setChatButtonState(disabled, text, showLoading) {
+  const btn = document.getElementById('chatBtn');
+  const btnText = document.getElementById('chatBtnText');
+  const loading = document.getElementById('chatLoading');
+  
+  btn.disabled = disabled;
+  btnText.textContent = text;
+  loading.style.display = showLoading ? 'inline-block' : 'none';
+}
+
+function setQuestion(question) {
+  document.getElementById('chatQuestion').value = question;
+  document.getElementById('chatQuestion').focus();
+}
+
+function clearChat() {
+  const output = document.getElementById('chatOutput');
+  
+  if (analysisData) {
+    output.innerHTML = `
+      <div style="text-align: center; color: var(--muted); padding: 30px 20px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">👨‍💼</div>
+        <div style="font-weight: 600; margin-bottom: 8px; color: var(--text);">
+          AI Coach Ready for ${analysisData.profession.display_name}
+        </div>
+        <div style="font-size: 13px; line-height: 1.5;">
+          I've analyzed your background in <strong>${analysisData.profession.display_name}</strong>.<br>
+          Ask me anything about career advancement, project ideas, or interview preparation!
+        </div>
+      </div>
+    `;
+  } else {
+    output.innerHTML = `
+      <div style="text-align: center; color: var(--muted); padding: 40px 20px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+        <div style="font-weight: 600; margin-bottom: 8px;">AI Career Coach Ready</div>
+        <div style="font-size: 13px;">Upload your resume first, then get personalized career advice for your profession!</div>
+      </div>
+    `;
+  }
+  
+  document.getElementById('chatQuestion').value = '';
+  document.getElementById('chatStats').style.display = 'none';
+  
+  if (eventSource) {
+    eventSource.close();
+  }
+}
+
+function showAlert(type, message) {
+  hideAlerts();
+  const alertId = type === 'error' ? 'errorAlert' : 'successAlert';
+  const alert = document.getElementById(alertId);
+  alert.textContent = message;
+  alert.style.display = 'block';
+  
+  // Auto-hide success messages
+  if (type === 'success') {
+    setTimeout(() => {
+      alert.style.display = 'none';
+    }, 5000);
+  }
+}
+
+function hideAlerts() {
+  document.getElementById('errorAlert').style.display = 'none';
+  document.getElementById('successAlert').style.display = 'none';
+}
+
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return string.startsWith('http://') || string.startsWith('https://');
+  } catch (_) {
+    return false;
+  }
+}
+
+// Initialize application
+window.addEventListener('load', async function() {
+  try {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    
+    console.log('🚀 ATS Career Coach v2.0 loaded');
+    console.log(`📊 ${data.supported_professions} professions supported`);
+    console.log(`🤖 Ollama configured: ${data.ollama_configured}`);
+    
+    if (data.has_session && data.profession !== 'Belirlenmedi') {
+      // Previous session exists
+      showAlert('success', `🔄 Previous session restored: ${data.profession}`);
+    }
+    
+  } catch (error) {
+    console.warn('Status check failed:', error);
+  }
+});
+
+// Prevent accidental page reload
+window.addEventListener('beforeunload', function(e) {
+  if (eventSource && eventSource.readyState === EventSource.OPEN) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>
